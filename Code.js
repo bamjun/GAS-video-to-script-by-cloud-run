@@ -50,6 +50,7 @@ function processSelectedFolder(folderId) {
   // 폴더 정보 기록 (Row1: 헤더, Row2: 값)
   sheet.getRange("A1").setValue("폴더명");
   sheet.getRange("B1").setValue("폴더id");
+  sheet.getRange("C1").setValue("기본 프롬프트 선택");
   sheet.getRange("A2").setValue(folderName);
   sheet.getRange("B2").setValue(folderId);
   
@@ -60,9 +61,10 @@ function processSelectedFolder(folderId) {
   sheet.getRange("D4").setValue("스크립트 변환");
   sheet.getRange("E4").setValue("음성to텍스트 문서 ID");
   sheet.getRange("F4").setValue("음성to텍스트 문서 바로가기");
-  sheet.getRange("G4").setValue("AI 프롬프트");
-  sheet.getRange("H4").setValue("AI 응답 문서 ID");
-  sheet.getRange("I4").setValue("AI 응답 문서 바로가기");
+  sheet.getRange("G4").setValue("AI 프롬프트 변환");
+  sheet.getRange("H4").setValue("AI 프롬프트 선택");
+  sheet.getRange("I4").setValue("AI 응답 문서 ID");
+  sheet.getRange("J4").setValue("AI 응답 문서 바로가기");
   
   // 이전 동영상 목록(행 5 이후) 삭제
   var lastRow = sheet.getLastRow();
@@ -83,7 +85,7 @@ function processSelectedFolder(folderId) {
       
       // D열: "변환" 버튼(하이퍼링크)
       // 웹앱 URL에 fileId와 row 번호를 파라미터로 전달합니다.
-      var url = WEBAPP_URL + "?fileId=" + encodeURIComponent(file.getId()) + "&row=" + row;
+      var url = WEBAPP_URL + "?action=transcribe&fileId=" + encodeURIComponent(file.getId()) + "&row=" + row;
       var formula = '=HYPERLINK("' + url + '", "변환")';
       sheet.getRange(row, 4).setFormula(formula);
       
@@ -93,36 +95,4 @@ function processSelectedFolder(folderId) {
   }
   
   return "폴더 '" + folderName + "' 내부의 동영상 파일 목록을 업데이트 했습니다.";
-}
-
-
-
-/**
- * 웹앱 엔드포인트로서 doGet() 함수가 호출되면,
- * URL 파라미터 (fileId, row)를 읽어 동영상 전사 함수를 실행하고,
- * 해당 행의 열 E와 F에 결과를 업데이트합니다.
- *
- * @param {Object} e - 요청 URL 파라미터 객체
- * @return {ContentService.TextOutput} 처리 결과 텍스트
- */
-function doGet(e) {
-  var fileId = e.parameter.fileId;
-  var row = parseInt(e.parameter.row, 10);
-  if (!fileId || isNaN(row)) {
-    return ContentService.createTextOutput("Invalid parameters.");
-  }
-  
-  // 전사 처리 (여기서는 더미 전사)
-  var docId = transcribeVideo(fileId);
-  
-  // 시트 업데이트: 해당 행의 E열에 전사 문서 ID, F열에 문서 바로가기 링크
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sheet = ss.getActiveSheet();
-  sheet.getRange(row, 5).setValue(docId);
-  
-  var docUrl = "https://docs.google.com/document/d/" + docId + "/edit";
-  var hyperlinkFormula = '=HYPERLINK("' + docUrl + '", "바로가기")';
-  sheet.getRange(row, 6).setFormula(hyperlinkFormula);
-  
-  return ContentService.createTextOutput("전사 완료. Doc ID: " + docId);
 }
