@@ -1,17 +1,6 @@
 const test_api_service_ = "";
 
 
-
-function test_api_service_1() {
-  var aiprompt = new AiPromptService();
-  var test1 = aiprompt.aiPromptVideo("19W3lqWfSkA5eULj1nt7bhh0auhw9TwmL689Q6EfWE5s");
-  Logger.log(test1)
-}
-
-
-
-
-
 class TranscribeService {
   processTranscription(fileId, row, param_row) {
     const docId = this.transcribeVideo(fileId);
@@ -43,7 +32,6 @@ class TranscribeService {
     // Cloud Function 호출 및 결과 파싱
     var cfResponse = UrlFetchApp.fetch(cloudFunctionUrl, cfOptions);
     var cfResult = JSON.parse(cfResponse.getContentText());
-    Logger.log(cfResult);
 
     // 전사 결과 추출
     var transcription = cfResult.transcription;
