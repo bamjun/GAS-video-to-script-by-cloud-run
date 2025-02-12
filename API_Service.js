@@ -1,3 +1,17 @@
+const test_api_service_ = "";
+
+
+
+function test_api_service_1() {
+  var aiprompt = new AiPromptService();
+  var test1 = aiprompt.aiPromptVideo("19W3lqWfSkA5eULj1nt7bhh0auhw9TwmL689Q6EfWE5s");
+  Logger.log(test1)
+}
+
+
+
+
+
 class TranscribeService {
   processTranscription(fileId, row, param_row) {
     const docId = this.transcribeVideo(fileId);
@@ -16,7 +30,7 @@ class TranscribeService {
     var bucketName = "meet-temp-speech-to-text";
 
     // Cloud Function URL 구성 (파일 업로드 및 변환 요청)
-    var cloudFunctionUrl = "https://fastapi-upload-from-drive-to-gcs-885918267659.asia-northeast3.run.app/uploadFromDriveToGCS" +
+    var cloudFunctionUrl = `${cloud_run_url}/uploadFromDriveToGCS` +
                            "?fileId=" + encodeURIComponent(fileId) +
                            "&bucketName=" + encodeURIComponent(bucketName);
 
@@ -70,31 +84,65 @@ class AiPromptService {
     // doc내용을 cound run ai-prompt 으로 바디값 prompt 로 보낸다. 
     // 응답을 받는다. 
     // 응답을 스프레드시트에 기록한다. 
-    const docId = this.aiPromptVideo(fileId);
-    this.updateSpreadsheet(docId, row, param_row);
+    const docId = this.aiPromptVideo(fileId, row);
+    this.updateSpreadsheet(docId, row);
 
     return {
       docId: docId
     }; // 기존 processAiPrompt 함수 호출
   }
 
-  aiPromptVideo(fileId) {
+  aiPromptVideo(fileId, row) {
     const doc = DocumentApp.openById(fileId);
     const body = doc.getBody();
     const prompt = body.getText();
-    const response = UrlFetchApp.fetch("https://fastapi-ai-prompt-885918267659.asia-northeast3.run.app/ai-prompt", {
+
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var sheet = ss.getSheetByName("main");
+    if (!sheet) {
+      sheet = ss.insertSheet("main");
+    }
+
+    var select_prompt_guidline = sheet.getRange(row, 8).getValue();
+    if (select_prompt_guidline == "") {
+      select_prompt_guidline = sheet.getRange(2, 3).getValue();
+    }
+
+    var prompt_sheet = ss.getSheetByName("prompt");
+    if (!prompt_sheet) {
+      prompt_sheet = ss.insertSheet("prompt");
+      prompt_sheet.getRange(1, 1).setValue("이 값을 지우고 새로 입력해주세요.");
+      prompt_sheet.getRange(1, 2).setValue("이 값을 지우고 새로 입력해주세요.");
+      prompt_sheet.getRange(1, 3).setValue("이 값을 지우고 새로 입력해주세요.");
+    }
+
+    var prompt_guidline = prompt_sheet.getRange(select_prompt_guidline, 1).getValue();
+
+
+    const response = UrlFetchApp.fetch(`${cloud_run_url}/ai-prompt`, {
       method: "post",
-      payload: { prompt: prompt }
+      contentType: "application/json",
+      payload: JSON.stringify({ prompt: `answer reference follow instruction: ${prompt_guidline} \n\n  reference: ${prompt}` })
     });
-    const responseText = response.getContentText();
-    return responseText;
+    const responseText = JSON.parse(response.getContentText());
+
+    var created_doc = DocumentApp.create("AI 프롬프트 응답 - " + fileId);
+    var created_doc_body = created_doc.getBody();
+    created_doc_body.appendParagraph("AI 프롬프트 응답");
+    created_doc_body.appendParagraph(responseText.result);
+
+    return created_doc.getId();
   }
 
-  updateSpreadsheet(docId, row, param_row) {
+  updateSpreadsheet(docId, row) {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
-    const sheet = ss.getActiveSheet();
-    sheet.getRange(row, 8).setValue(responseText);
+    const sheet = ss.getSheetByName("main");
+
+    sheet.getRange(row, 9).setValue(docId);
+
+    const docUrl = "https://docs.google.com/document/d/" + docId + "/edit";
+    const hyperlinkFormula = '=HYPERLINK("' + docUrl + '", "바로가기")';
+    sheet.getRange(row, 10).setFormula(hyperlinkFormula);
   }
 }
-
 

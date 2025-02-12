@@ -1,3 +1,11 @@
+function onOpen() {
+  var ui = SpreadsheetApp.getUi();
+  ui.createMenu('◉ 커스텀 메뉴')
+    .addItem('폴더 선택', 'showFolderPicker')
+    .addToUi();
+}
+
+
 /**
  * 구글 시트에서 대화상자로 폴더 선택 창을 띄웁니다.
  */
@@ -45,7 +53,10 @@ function processSelectedFolder(folderId) {
   var folderName = folder.getName();
   
   var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sheet = ss.getActiveSheet();
+  var sheet = ss.getSheetByName("main");
+  if (!sheet) {
+    sheet = ss.insertSheet("main");
+  }
   
   // 폴더 정보 기록 (Row1: 헤더, Row2: 값)
   sheet.getRange("A1").setValue("폴더명");
@@ -96,3 +107,4 @@ function processSelectedFolder(folderId) {
   
   return "폴더 '" + folderName + "' 내부의 동영상 파일 목록을 업데이트 했습니다.";
 }
+

@@ -47,5 +47,5 @@ function handleAiPrompt(e) {
   );
 
   // AI 프롬프트 처리 로직
-  return ContentService.createTextOutput("AI 프롬프트 처리 완료. Doc ID: " + result.fileId);
+  return ContentService.createTextOutput("AI 프롬프트 처리 완료. Doc ID: " + result.docId);
 }
