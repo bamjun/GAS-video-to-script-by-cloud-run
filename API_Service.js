@@ -126,7 +126,7 @@ class AiPromptService {
     });
     const responseText = JSON.parse(response.getContentText());
 
-    var created_doc = DocumentApp.create("AI 프롬프트 응답 - " + fileId);
+    var created_doc = DocumentApp.create(`AI 프롬프트 ${row}번의 응답 - ${fileId}`);
     var created_doc_body = created_doc.getBody();
     created_doc_body.appendParagraph("AI 프롬프트 응답");
     created_doc_body.appendParagraph(responseText.result);
