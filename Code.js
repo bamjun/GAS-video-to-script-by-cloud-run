@@ -2,6 +2,7 @@ function onOpen() {
   var ui = SpreadsheetApp.getUi();
   ui.createMenu('◉ 커스텀 메뉴')
     .addItem('폴더 선택', 'showFolderPicker')
+    .addItem('업데이트트', 'updateMissingFileIds')
     .addToUi();
 }
 
@@ -51,6 +52,8 @@ function getFolderList() {
 function processSelectedFolder(folderId) {
   var folder = DriveApp.getFolderById(folderId);
   var folderName = folder.getName();
+
+  folder.addEditor(cloud_run_account_email);
   
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sheet = ss.getSheetByName("main");

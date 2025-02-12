@@ -66,7 +66,7 @@ class TranscribeService {
 
 
 class AiPromptService {
-  processAiPrompt(fileId, row, param_row) {
+  processAiPrompt(fileId, row) {
     // fileid 는 docid 이다. 
     // fileid 를 이용해서 doc 를 가져온다. 
     // doc내용을 cound run ai-prompt 으로 바디값 prompt 로 보낸다. 
@@ -92,9 +92,13 @@ class AiPromptService {
     }
 
     var select_prompt_guidline = sheet.getRange(row, 8).getValue();
-    if (select_prompt_guidline == "") {
-      select_prompt_guidline = sheet.getRange(2, 3).getValue();
+    var default_prompt_guidline = sheet.getRange(2, 3).getValue();
+    if (select_prompt_guidline == "" && default_prompt_guidline == "") {
+      select_prompt_guidline = 1;
+    } else if (select_prompt_guidline == "") {
+      select_prompt_guidline = default_prompt_guidline;
     }
+
 
     var prompt_sheet = ss.getSheetByName("prompt");
     if (!prompt_sheet) {

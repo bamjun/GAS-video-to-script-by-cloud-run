@@ -42,9 +42,8 @@ function handleAiPrompt(e) {
   const aiPromptService = new AiPromptService();
   const result = aiPromptService.processAiPrompt(
     validation.data.fileId,
-    validation.data.row,
-    validation.data.rawRow
-  );
+    validation.data.row
+    );
 
   // AI 프롬프트 처리 로직
   return ContentService.createTextOutput("AI 프롬프트 처리 완료. Doc ID: " + result.docId);

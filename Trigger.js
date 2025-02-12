@@ -35,17 +35,26 @@ function updateMissingFileIds() {
     if (storedFileIds.indexOf(fileId) === -1) {
       var column_c = file.getDateCreated();
       var column_d = params_url_change_script(last_row, fileId);
+
       sheet.appendRow([fileId, file.getName(), column_c, column_d]);
       Logger.log("추가된 파일: " + file.getName() + " (" + fileId + ")");
 
       const transcribeService = new TranscribeService();
-      const result = transcribeService.processTranscription(
+      const result_transcribeService = transcribeService.processTranscription(
         fileId,
         last_row,
         last_row
       );
 
-      Logger.log("전사 완료. Doc ID: " + result.docId);
+      Logger.log("전사 완료. Doc ID: " + result_transcribeService.docId);
+
+      const aiPromptService = new AiPromptService();
+      const result_aiPromptService = aiPromptService.processAiPrompt(
+        result_transcribeService.docId,
+        last_row
+      );
+
+      Logger.log("AI 프롬프트 처리 완료. Doc ID: " + result_aiPromptService.docId);
 
 
     }
